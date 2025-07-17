@@ -8,10 +8,7 @@ A simple macOS menubar application that provides quick access to Google Translat
 - 🚀 Quick access to Google Translate
 - 📝 Text input dialog for instant translation
 - 🦊 Opens Google Translate in Safari with a dedicated window
-- 🎯 Simple menu controls (Open/Close/Quit)
-- 📱 Automatically sized Safari window (1000x700)
-- ⚡ Auto-start with system (automatically configured via Homebrew)
-- 📊 Status indicator showing current state
+
 
 ## Prerequisites
 
@@ -31,18 +28,7 @@ brew install /tmp/macostranslate.rb
 
 **Note:** The Homebrew installation automatically configures the app to start when you log in. To disable autostart, simply uninstall with `brew uninstall macostranslate`.
 
-### Option 2: Direct Download
-
-```bash
-# Download the latest release
-curl -L https://github.com/techt3/macostranslate/releases/latest/download/macostranslate-*.tar.gz -o macostranslate.tar.gz
-
-# Extract and install
-tar -xzf macostranslate.tar.gz
-sudo cp macostranslate /usr/local/bin/
-```
-
-### Option 3: Build from Source
+### Option 2: Build from Source
 
 If you want to build from source (requires Go 1.24 or later):
 
@@ -106,48 +92,7 @@ To re-enable autostart, reinstall the app:
 brew install /tmp/macostranslate.rb
 ```
 
-## Enhanced Features
 
-- **🚀 One-Click Access**: The first menu item opens Google Translate instantly
-- **📊 Status Display**: Shows whether translate is currently open or ready
-- **🔄 Smart Window Management**: If already open, brings Safari to front
-- **⚡ Streamlined Menu**: Minimal, focused interface with clear actions
-- **🎯 Prominent Action**: Main translate action is the first and most visible option
-
-## How it Works
-
-The app uses AppleScript to control Safari, creating a dedicated window for Google Translate. This approach:
-- Avoids threading issues with embedded webviews
-- Provides a native macOS experience
-- Uses the system's default web engine (Safari)
-- Maintains proper window management
-
-## Building for Distribution
-
-To build a standalone executable:
-
-```bash
-go build -ldflags "-s -w" -o macostranslate
-```
-
-Or use the Makefile:
-
-```bash
-make build-release
-```
-
-## Dependencies
-
-- `github.com/getlantern/systray` - For menubar integration
-- Built-in macOS Safari browser
-- AppleScript (built into macOS)
-
-## Notes
-
-- The app requires an internet connection to load Google Translate
-- Safari must be available (pre-installed on all macOS systems)
-- The app is designed to be lightweight and stay in the background
-- Window positioning and sizing is handled automatically
 
 ## License
 
