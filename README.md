@@ -25,9 +25,7 @@ A simple macOS menubar application that provides quick access to Google Translat
 
 ```bash
 # Download the latest Homebrew formula
-curl -L https://github.com/techt3/macostranslate/releases/latest/download/macostranslate.rb -o /tmp/macostranslate.rb
-
-# Install with Homebrew (includes autostart configuration)
+curl -L https://github.com/techt3/macostranslate/releases/latest/download/macostranslate.rb -o /tmp/macostranslate.rb 
 brew install /tmp/macostranslate.rb
 ```
 
