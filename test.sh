@@ -30,7 +30,7 @@ if kill -0 $APP_PID 2>/dev/null; then
     echo "⚡ Click it and select '🚀 Open Translate' for instant access"
     echo "� Click it and select '📝 Translate Text' for text input"
     echo "�📊 Menu now shows status and streamlined options"
-    echo "🔧 Test the auto-start feature via the menu"
+    echo "🔧 Testing completed"
     
     # Kill the app
     kill $APP_PID
@@ -41,22 +41,13 @@ else
 fi
 
 echo ""
-echo "🔍 Testing auto-start functionality..."
-
-# Test auto-start detection
-if [ -f ~/Library/LaunchAgents/pl.com.t3.macostranslate.plist ]; then
-    echo "⚠️  Auto-start plist already exists - cleaning up for test"
-    launchctl unload ~/Library/LaunchAgents/pl.com.t3.macostranslate.plist 2>/dev/null
-    rm -f ~/Library/LaunchAgents/pl.com.t3.macostranslate.plist
-fi
-
-echo ""
-echo "🎉 All tests passed! The enhanced app is ready to use."
+echo "🎉 All tests passed! The app is ready to use."
 echo "🚀 Key improvements:"
 echo "   • One-click translate access"
 echo "   • Text input dialog for instant translation"
 echo "   • Status display in menu"
-echo "   • Auto-start functionality"
 echo "   • Better window management"
+echo "   • Auto-start now handled by Homebrew"
 echo ""
-echo "💡 Run './macostranslate' to start the enhanced application"
+echo "💡 Run './macostranslate' to start the application"
+echo "💡 Use 'brew install' for automatic autostart configuration"

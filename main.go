@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"syscall"
@@ -53,7 +52,7 @@ func printHelp() {
 	fmt.Println("  🦊 Opens Google Translate in Safari with a dedicated window")
 	fmt.Println("  🎯 Simple menu controls (Open/Close/Quit)")
 	fmt.Println("  📱 Automatically sized Safari window (1000x700)")
-	fmt.Println("  ⚡ Auto-start with system (install/remove via menu)")
+	fmt.Println("  ⚡ Auto-start with system (configured via Homebrew)")
 	fmt.Println("  📊 Status indicator showing current state")
 	fmt.Println()
 	fmt.Println("USAGE INSTRUCTIONS:")
@@ -61,9 +60,8 @@ func printHelp() {
 	fmt.Println("  2. Click the icon to access the menu")
 	fmt.Println("  3. Select '🚀 Open Translate' to open Google Translate in Safari")
 	fmt.Println("  4. Select '📝 Translate Text' to enter text directly for translation")
-	fmt.Println("  5. Use '⚡ Install Auto-Start' to make the app start automatically")
-	fmt.Println("  6. Use '🗑️ Remove Auto-Start' to remove from system startup")
-	fmt.Println("  7. Use '🛑 Quit' to exit the application completely")
+	fmt.Println("  5. Use '🛑 Quit' to exit the application completely")
+	fmt.Println("  6. To disable autostart, uninstall via: brew uninstall macostranslate")
 	fmt.Println()
 	fmt.Println("REQUIREMENTS:")
 	fmt.Println("  - macOS (this app is designed specifically for macOS)")
@@ -84,23 +82,6 @@ func onReady() {
 
 	systray.AddSeparator()
 
-	systray.AddSeparator()
-
-	// Auto-start menu items
-	autoStartItem := systray.AddMenuItem("⚡ Install Auto-Start", "Install app to start with system")
-	removeAutoStartItem := systray.AddMenuItem("🗑️ Remove Auto-Start", "Remove app from system startup")
-
-	// Check if auto-start is already installed
-	if isAutoStartInstalled() {
-		autoStartItem.Disable()
-		removeAutoStartItem.Enable()
-	} else {
-		autoStartItem.Enable()
-		removeAutoStartItem.Disable()
-	}
-
-	systray.AddSeparator()
-
 	quitItem := systray.AddMenuItem("🛑 Quit", "Quit the application")
 
 	// Handle menu clicks
@@ -113,17 +94,6 @@ func onReady() {
 				}
 			case <-textInputItem.ClickedCh:
 				go handleTextInput()
-
-			case <-autoStartItem.ClickedCh:
-				if installAutoStart() {
-					autoStartItem.Disable()
-					removeAutoStartItem.Enable()
-				}
-			case <-removeAutoStartItem.ClickedCh:
-				if removeAutoStart() {
-					autoStartItem.Enable()
-					removeAutoStartItem.Disable()
-				}
 			case <-quitItem.ClickedCh:
 				systray.Quit()
 				return
@@ -197,133 +167,12 @@ end tell
 	}
 }
 
-func closeWebView() {
-	if webviewProcess != nil && isWebViewOpen {
-		// Try to close the current Safari tab if it's showing Google Translate
-		script := `
-tell application "Safari"
-    if URL of current tab of front window contains "translate.google.com" then
-        close current tab of front window
-    end if
-end tell
-`
-		cmd := exec.Command("osascript", "-e", script)
-		_ = cmd.Run() // Ignore error as window might not exist
-		webviewProcess = nil
-	}
-}
-
 func onExit() {
 	// Cleanup
 	if webviewProcess != nil && webviewProcess.Process != nil {
 		_ = webviewProcess.Process.Kill() // Ignore error as process might already be dead
 	}
 	os.Exit(0)
-}
-
-// Auto-start functionality
-
-func isAutoStartInstalled() bool {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return false
-	}
-
-	plistPath := filepath.Join(homeDir, "Library", "LaunchAgents", "pl.com.t3.macostranslate.plist")
-	_, err = os.Stat(plistPath)
-	return err == nil
-}
-
-func installAutoStart() bool {
-	// Get the current executable path
-	execPath, err := os.Executable()
-	if err != nil {
-		log.Printf("Error getting executable path: %v", err)
-		return false
-	}
-
-	// Get absolute path
-	absPath, err := filepath.Abs(execPath)
-	if err != nil {
-		log.Printf("Error getting absolute path: %v", err)
-		return false
-	}
-
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		log.Printf("Error getting home directory: %v", err)
-		return false
-	}
-
-	// Create LaunchAgents directory if it doesn't exist
-	launchAgentsDir := filepath.Join(homeDir, "Library", "LaunchAgents")
-	if err := os.MkdirAll(launchAgentsDir, 0755); err != nil {
-		log.Printf("Error creating LaunchAgents directory: %v", err)
-		return false
-	}
-
-	// Create the plist content
-	plistContent := fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>Label</key>
-	<string>pl.com.t3.macostranslate</string>
-	<key>ProgramArguments</key>
-	<array>
-		<string>%s</string>
-	</array>
-	<key>RunAtLoad</key>
-	<true/>
-	<key>KeepAlive</key>
-	<false/>
-</dict>
-</plist>`, absPath)
-
-	// Write the plist file
-	plistPath := filepath.Join(launchAgentsDir, "pl.com.t3.macostranslate.plist")
-	if err := os.WriteFile(plistPath, []byte(plistContent), 0644); err != nil {
-		log.Printf("Error writing plist file: %v", err)
-		return false
-	}
-
-	// Load the launch agent
-	cmd := exec.Command("launchctl", "load", plistPath)
-	if err := cmd.Run(); err != nil {
-		log.Printf("Error loading launch agent: %v", err)
-		// Try to remove the file if loading failed
-		_ = os.Remove(plistPath)
-		return false
-	}
-
-	log.Println("Auto-start installed successfully")
-	return true
-}
-
-func removeAutoStart() bool {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		log.Printf("Error getting home directory: %v", err)
-		return false
-	}
-
-	plistPath := filepath.Join(homeDir, "Library", "LaunchAgents", "pl.com.t3.macostranslate.plist")
-
-	// Unload the launch agent
-	cmd := exec.Command("launchctl", "unload", plistPath)
-	if err := cmd.Run(); err != nil {
-		// If unload fails, it might not be loaded, but we should still try to remove the file
-		log.Printf("Warning: Error unloading launch agent: %v", err)
-	}
-
-	// Remove the plist file
-	if err := os.Remove(plistPath); err != nil {
-		log.Printf("Error removing plist file: %v", err)
-		return false
-	}
-
-	log.Println("Auto-start removed successfully")
-	return true
 }
 
 func handleTextInput() {

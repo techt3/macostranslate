@@ -78,7 +78,7 @@ jobs:
         echo "VERSION=${VERSION}" >> $GITHUB_ENV
         echo "PACKAGE_NAME=${PACKAGE_NAME}" >> $GITHUB_ENV
         
-    - name: Create brew formula
+    - name: Update brew formula
       if: github.event_name == 'push'
       run: |
         # Create a package version identifier using short SHA
@@ -87,30 +87,14 @@ jobs:
         # Calculate SHA256 checksum
         SHA256_CHECKSUM=$(shasum -a 256 "${PACKAGE_NAME}" | cut -d' ' -f1)
         
-        # Create brew formula using echo commands to avoid heredoc issues
-        echo "Creating brew formula..."
+        # Copy the sample formula and update it with actual values
+        echo "Updating brew formula with release data..."
+        cp macostranslate-sample.rb macostranslate.rb
         
-        echo 'class Macostranslate < Formula' > macostranslate.rb
-        echo '  desc "macOS Translate App - Simple menubar application for quick access to Google Translate"' >> macostranslate.rb
-        echo '  homepage "https://github.com/techt3/macostranslate"' >> macostranslate.rb
-        echo "  version \"$SHORT_SHA\"" >> macostranslate.rb
-        echo '  ' >> macostranslate.rb
-        echo '  if Hardware::CPU.arm?' >> macostranslate.rb
-        echo "    url \"https://github.com/techt3/macostranslate/releases/download/v$SHORT_SHA/$PACKAGE_NAME\"" >> macostranslate.rb
-        echo "    sha256 \"$SHA256_CHECKSUM\"" >> macostranslate.rb
-        echo '  elsif Hardware::CPU.intel?' >> macostranslate.rb
-        echo "    url \"https://github.com/techt3/macostranslate/releases/download/v$SHORT_SHA/$PACKAGE_NAME\"" >> macostranslate.rb
-        echo "    sha256 \"$SHA256_CHECKSUM\"" >> macostranslate.rb
-        echo '  end' >> macostranslate.rb
-        echo '  ' >> macostranslate.rb
-        echo '  def install' >> macostranslate.rb
-        echo '    bin.install "macostranslate"' >> macostranslate.rb
-        echo '  end' >> macostranslate.rb
-        echo '  ' >> macostranslate.rb
-        echo '  test do' >> macostranslate.rb
-        echo '    system "#{bin}/macostranslate", "--help"' >> macostranslate.rb
-        echo '  end' >> macostranslate.rb
-        echo 'end' >> macostranslate.rb
+        # Update the version and URLs in the formula
+        sed -i '' "s/version \"sample\"/version \"$SHORT_SHA\"/" macostranslate.rb
+        sed -i '' "s|url \"https://github.com/techt3/macostranslate/releases/download/v\$SAMPLE/macostranslate-\$SAMPLE.tar.gz\"|url \"https://github.com/techt3/macostranslate/releases/download/v$SHORT_SHA/$PACKAGE_NAME\"|g" macostranslate.rb
+        sed -i '' "s/sha256 \"sample_checksum\"/sha256 \"$SHA256_CHECKSUM\"/" macostranslate.rb
         
         echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
         echo "SHA256_CHECKSUM=${SHA256_CHECKSUM}" >> $GITHUB_ENV

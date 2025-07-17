@@ -10,7 +10,7 @@ A simple macOS menubar application that provides quick access to Google Translat
 - 🦊 Opens Google Translate in Safari with a dedicated window
 - 🎯 Simple menu controls (Open/Close/Quit)
 - 📱 Automatically sized Safari window (1000x700)
-- ⚡ Auto-start with system (install/remove via menu)
+- ⚡ Auto-start with system (automatically configured via Homebrew)
 - 📊 Status indicator showing current state
 
 ## Prerequisites
@@ -21,15 +21,17 @@ A simple macOS menubar application that provides quick access to Google Translat
 ## Installation
 
 
-### Option 1 Manual Homebrew Install
+### Option 1: Homebrew Install (Recommended)
 
 ```bash
 # Download the latest Homebrew formula
 curl -L https://github.com/techt3/macostranslate/releases/latest/download/macostranslate.rb -o /tmp/macostranslate.rb
 
-# Install with Homebrew
+# Install with Homebrew (includes autostart configuration)
 brew install /tmp/macostranslate.rb
 ```
+
+**Note:** The Homebrew installation automatically configures the app to start when you log in. To disable autostart, simply uninstall with `brew uninstall macostranslate`.
 
 ### Option 2: Direct Download
 
@@ -68,9 +70,9 @@ go build -o macostranslate
 3. Select "🚀 Open Translate" to open a Safari window with Google Translate
 4. Select "📝 Translate Text" to enter text directly for translation
 5. The Safari window will be automatically sized and positioned
-6. Use "⚡ Install Auto-Start" to make the app start automatically with your system
-7. Use "🗑️ Remove Auto-Start" to remove the app from system startup
-8. Use "🛑 Quit" to exit the application completely
+6. Use "🛑 Quit" to exit the application completely
+
+**Note:** If installed via Homebrew, the app will automatically start when you log in.
 
 ## Text Input Feature
 
@@ -83,18 +85,28 @@ The app now includes a convenient text input dialog:
 
 ## Auto-Start Feature
 
-The app includes a convenient auto-start feature that allows it to launch automatically when you log into your Mac:
+The app automatically starts when you log into your Mac when installed via Homebrew:
 
-- **Install Auto-Start**: Creates a Launch Agent that starts the app when you log in
-- **Remove Auto-Start**: Removes the Launch Agent and stops automatic startup
-- **Status Display**: Shows whether auto-start is enabled or disabled
+- **Automatic Configuration**: Homebrew automatically configures autostart during installation
+- **Launch Agent**: Creates a proper macOS Launch Agent that starts the app when you log in
 - **Safe Installation**: Uses macOS standard Launch Agents directory (`~/Library/LaunchAgents/`)
+- **Easy Management**: Install/uninstall autostart by installing/uninstalling the app via Homebrew
 
 The auto-start feature:
 - Creates a `pl.com.t3.macostranslate.plist` file in your Launch Agents directory
 - Uses `launchctl` to manage the service
-- Automatically detects if already installed
-- Provides easy removal if you change your mind
+- Automatically configured during `brew install`
+- Automatically removed during `brew uninstall`
+
+To disable autostart, simply uninstall the app:
+```bash
+brew uninstall macostranslate
+```
+
+To re-enable autostart, reinstall the app:
+```bash
+brew install /tmp/macostranslate.rb
+```
 
 ## Enhanced Features
 
