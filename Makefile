@@ -1,4 +1,4 @@
-# Makefile for macOS Translate App
+# Makefile for macostranslate App
 
 .PHONY: build run clean install deps test
 

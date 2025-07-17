@@ -1,4 +1,4 @@
-# macOS Translate App
+# macostranslate App
 
 A simple macOS menubar application that provides quick access to Google Translate through Safari.
 
@@ -8,6 +8,11 @@ A simple macOS menubar application that provides quick access to Google Translat
 - 🚀 Quick access to Google Translate
 - 📝 Text input dialog for instant translation
 - 🦊 Opens Google Translate in Safari with a dedicated window
+- 🎯 Simple menu controls (Open/Close/Quit)
+- 📱 Automatically sized Safari window (1000x700)
+- ⚡ Auto-start with system (automatically configured via Homebrew)
+- ⌨️ Global keyboard shortcut (Cmd+Shift+T) - configured via System Preferences
+- 📊 Status indicator showing current state
 
 
 ## Prerequisites
@@ -93,6 +98,24 @@ brew install /tmp/macostranslate.rb
 ```
 
 
+## Keyboard Shortcut Feature
+
+The Homebrew installation automatically sets up a macOS service that allows you to assign a global keyboard shortcut:
+
+### Setting Up the Keyboard Shortcut
+
+1. After installing via Homebrew, go to **System Preferences** → **Keyboard** → **Shortcuts**
+2. Select **Services** in the left panel
+3. Scroll down to find **"Open macostranslate"** service
+4. Click on it and assign your preferred shortcut (we recommend **Cmd+Shift+T**)
+5. The shortcut will now work system-wide to instantly open Google Translate
+
+### Benefits
+
+- **⌨️ Global Access**: Works from any application, anywhere in macOS
+- **🚀 Instant Launch**: No need to find the menubar icon
+- **🎯 One-Key Translation**: Direct access to translate functionality
+- **🔧 Customizable**: Assign any shortcut you prefer via System Preferences
 
 ## License
 

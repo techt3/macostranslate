@@ -1,4 +1,4 @@
-# This workflow builds and tests the macOS Translate app
+# This workflow builds and tests the macostranslate app
 # The app requires macOS-specific frameworks (Carbon, Cocoa) and AppleScript
 
 name: macOS Build
@@ -105,8 +105,8 @@ jobs:
       run: |
         # Create GitHub release
         gh release create "v$SHORT_SHA" \
-          --title "macOS Translate v$SHORT_SHA" \
-          --notes "Automated release of macOS Translate universal binary for commit ${{ github.sha }}" \
+          --title "macostranslate v$SHORT_SHA" \
+          --notes "Automated release of macostranslate universal binary for commit ${{ github.sha }}" \
           --repo "${{ github.repository }}" \
           --latest \
           "$PACKAGE_NAME" \

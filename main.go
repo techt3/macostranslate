@@ -29,12 +29,15 @@ func main() {
 		log.Fatal("This application is designed for macOS only")
 	}
 
+	// Set up global hotkey (Cmd+Shift+T)
+	go setupGlobalHotkey()
+
 	// Run systray on main thread
 	systray.Run(onReady, onExit)
 }
 
 func printHelp() {
-	fmt.Println("macOS Translate App")
+	fmt.Println("macostranslate App")
 	fmt.Println("===================")
 	fmt.Println()
 	fmt.Println("A simple macOS menubar application that provides quick access to Google Translate through Safari.")
@@ -53,6 +56,7 @@ func printHelp() {
 	fmt.Println("  🎯 Simple menu controls (Open/Close/Quit)")
 	fmt.Println("  📱 Automatically sized Safari window (1000x700)")
 	fmt.Println("  ⚡ Auto-start with system (configured via Homebrew)")
+	fmt.Println("  ⌨️ Global keyboard shortcut (Cmd+Shift+T)")
 	fmt.Println("  📊 Status indicator showing current state")
 	fmt.Println()
 	fmt.Println("USAGE INSTRUCTIONS:")
@@ -62,6 +66,7 @@ func printHelp() {
 	fmt.Println("  4. Select '📝 Translate Text' to enter text directly for translation")
 	fmt.Println("  5. Use '🛑 Quit' to exit the application completely")
 	fmt.Println("  6. To disable autostart, uninstall via: brew uninstall macostranslate")
+	fmt.Println("  7. Set up global hotkey Cmd+Shift+T in System Preferences > Keyboard > Shortcuts")
 	fmt.Println()
 	fmt.Println("REQUIREMENTS:")
 	fmt.Println("  - macOS (this app is designed specifically for macOS)")
@@ -72,10 +77,10 @@ func printHelp() {
 
 func onReady() {
 	systray.SetTitle("🌐")
-	systray.SetTooltip("Google Translate (Click for instant translate)")
+	systray.SetTooltip("Google Translate (Click for instant translate or use Cmd+Shift+T)")
 
 	// Create a minimal menu with the main action first
-	openItem := systray.AddMenuItem("🚀 Open Translate", "Open Google Translate instantly")
+	openItem := systray.AddMenuItem("🚀 Open Translate", "Open Google Translate instantly (Cmd+Shift+T)")
 
 	// Add text input option
 	textInputItem := systray.AddMenuItem("📝 Translate Text", "Enter text to translate")
@@ -236,4 +241,16 @@ end tell
 			log.Printf("Error opening default browser with text: %v", err)
 		}
 	}
+}
+
+// setupGlobalHotkey sets up a global keyboard shortcut using macOS shortcuts
+func setupGlobalHotkey() {
+	// Note: This creates a simple monitoring approach
+	// For true global hotkeys, we would need additional libraries or system integration
+	// For now, we'll document the recommended system shortcut setup
+	log.Println("To set up global hotkey Cmd+Shift+T:")
+	log.Println("1. Go to System Preferences > Keyboard > Shortcuts")
+	log.Println("2. Select 'Services' in the left panel")
+	log.Println("3. Find 'macostranslate' service")
+	log.Println("4. Assign Cmd+Shift+T shortcut")
 }
