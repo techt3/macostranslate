@@ -14,10 +14,6 @@ build-release:
 run: build
 	./macostranslate
 
-# Test the application
-test: build
-	./test.sh
-
 # Clean build artifacts
 clean:
 	rm -f macostranslate
@@ -40,7 +36,6 @@ help:
 	@echo "  build         - Build the application"
 	@echo "  build-release - Build with optimizations"
 	@echo "  run           - Build and run the application"
-	@echo "  test          - Build and test the application"
 	@echo "  clean         - Remove build artifacts"
 	@echo "  deps          - Install dependencies"
 	@echo "  install       - Install to /usr/local/bin"
