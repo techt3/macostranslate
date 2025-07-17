@@ -108,6 +108,7 @@ jobs:
           --title "macOS Translate v$SHORT_SHA" \
           --notes "Automated release of macOS Translate universal binary for commit ${{ github.sha }}" \
           --repo "${{ github.repository }}" \
+          --latest \
           "$PACKAGE_NAME" \
           "macostranslate.rb" 
           
@@ -118,11 +119,11 @@ jobs:
         echo ""
         echo "1. 🍺 Manual Brew Install (Recommended):"
         echo "   # Download and install the formula locally"
-        echo "   curl -L https://github.com/${{ github.repository }}/releases/download/v$SHORT_SHA/macostranslate.rb -o /tmp/macostranslate.rb"
+        echo "   curl -L https://github.com/${{ github.repository }}/releases/latest/download/macostranslate.rb -o /tmp/macostranslate.rb"
         echo "   brew install /tmp/macostranslate.rb"
         echo ""
         echo "2. 📥 Direct download:"
-        echo "   curl -L https://github.com/${{ github.repository }}/releases/download/v$SHORT_SHA/$PACKAGE_NAME -o macostranslate.tar.gz"
+        echo "   curl -L https://github.com/${{ github.repository }}/releases/latest/download/$PACKAGE_NAME -o macostranslate.tar.gz"
         echo "   tar -xzf macostranslate.tar.gz"
         echo "   sudo cp macostranslate /usr/local/bin/"
         echo ""
