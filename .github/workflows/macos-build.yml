@@ -115,7 +115,7 @@ jobs:
         echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
         echo "SHA256_CHECKSUM=${SHA256_CHECKSUM}" >> $GITHUB_ENV
         
-        
+   
     - name: Create GitHub release
       if: github.event_name == 'push'
       run: |
@@ -125,18 +125,24 @@ jobs:
           --notes "Automated release of macOS Translate universal binary for commit ${{ github.sha }}" \
           --repo "${{ github.repository }}" \
           "$PACKAGE_NAME" \
-          "macostranslate.rb"
+          "macostranslate.rb" 
           
         echo ""
         echo "✅ Package uploaded successfully to GitHub Packages!"
         echo ""
         echo "📦 Installation options:"
-        echo "1. 🍺 Brew formula:"
-        echo "   brew install https://github.com/${{ github.repository }}/releases/download/v$SHORT_SHA/macostranslate.rb"
         echo ""
+        echo "1. 🍺 Manual Brew Install (Recommended):"
+        echo "   # Download and install the formula locally"
+        echo "   curl -L https://github.com/${{ github.repository }}/releases/download/v$SHORT_SHA/macostranslate.rb -o /tmp/macostranslate.rb"
+        echo "   brew install /tmp/macostranslate.rb"
         echo ""
-        echo "3. 📥 Direct download:"
+        echo "2. 📥 Direct download:"
         echo "   curl -L https://github.com/${{ github.repository }}/releases/download/v$SHORT_SHA/$PACKAGE_NAME -o macostranslate.tar.gz"
+        echo "   tar -xzf macostranslate.tar.gz"
+        echo "   sudo cp macostranslate /usr/local/bin/"
+        echo ""
+        
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         

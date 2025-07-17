@@ -16,26 +16,50 @@ A simple macOS menubar application that provides quick access to Google Translat
 ## Prerequisites
 
 - macOS (this app is designed specifically for macOS)
-- Go 1.24 or later
 - Safari browser (pre-installed on macOS)
 
 ## Installation
 
-1. Clone or download this repository
-2. Install dependencies:
-   ```bash
-   go mod tidy
-   ```
 
-3. Build the application:
-   ```bash
-   go build -o macostranslate
-   ```
+### Option 1 Manual Homebrew Install
 
-4. Run the application:
-   ```bash
-   ./macostranslate
-   ```
+```bash
+# Download the latest Homebrew formula
+curl -L https://github.com/techt3/macostranslate/releases/latest/download/macostranslate.rb -o /tmp/macostranslate.rb
+
+# Install with Homebrew
+brew install /tmp/macostranslate.rb
+```
+
+### Option 2: Direct Download
+
+```bash
+# Download the latest release
+curl -L https://github.com/techt3/macostranslate/releases/latest/download/macostranslate-*.tar.gz -o macostranslate.tar.gz
+
+# Extract and install
+tar -xzf macostranslate.tar.gz
+sudo cp macostranslate /usr/local/bin/
+```
+
+### Option 3: Build from Source
+
+If you want to build from source (requires Go 1.24 or later):
+
+```bash
+# Clone the repository
+git clone https://github.com/techt3/macostranslate.git
+cd macostranslate
+
+# Install dependencies
+go mod tidy
+
+# Build the application
+go build -o macostranslate
+
+# Run the application
+./macostranslate
+```
 
 ## Usage
 
