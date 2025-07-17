@@ -68,10 +68,9 @@ go build -o macostranslate
 3. Select "🚀 Open Translate" to open a Safari window with Google Translate
 4. Select "📝 Translate Text" to enter text directly for translation
 5. The Safari window will be automatically sized and positioned
-6. Use "❌ Close Window" to close the Safari window (app stays in menubar)
-7. Use "⚡ Install Auto-Start" to make the app start automatically with your system
-8. Use "🗑️ Remove Auto-Start" to remove the app from system startup
-9. Use "🛑 Quit" to exit the application completely
+6. Use "⚡ Install Auto-Start" to make the app start automatically with your system
+7. Use "🗑️ Remove Auto-Start" to remove the app from system startup
+8. Use "🛑 Quit" to exit the application completely
 
 ## Text Input Feature
 

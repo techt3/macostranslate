@@ -61,10 +61,9 @@ func printHelp() {
 	fmt.Println("  2. Click the icon to access the menu")
 	fmt.Println("  3. Select '🚀 Open Translate' to open Google Translate in Safari")
 	fmt.Println("  4. Select '📝 Translate Text' to enter text directly for translation")
-	fmt.Println("  5. Use '❌ Close Window' to close the Safari window (app stays in menubar)")
-	fmt.Println("  6. Use '⚡ Install Auto-Start' to make the app start automatically")
-	fmt.Println("  7. Use '🗑️ Remove Auto-Start' to remove from system startup")
-	fmt.Println("  8. Use '🛑 Quit' to exit the application completely")
+	fmt.Println("  5. Use '⚡ Install Auto-Start' to make the app start automatically")
+	fmt.Println("  6. Use '🗑️ Remove Auto-Start' to remove from system startup")
+	fmt.Println("  7. Use '🛑 Quit' to exit the application completely")
 	fmt.Println()
 	fmt.Println("REQUIREMENTS:")
 	fmt.Println("  - macOS (this app is designed specifically for macOS)")
@@ -83,14 +82,7 @@ func onReady() {
 	// Add text input option
 	textInputItem := systray.AddMenuItem("📝 Translate Text", "Enter text to translate")
 
-	// Show status
-	statusItem := systray.AddMenuItem("📊 Status: Ready", "Current status")
-	statusItem.Disable()
-
 	systray.AddSeparator()
-
-	closeItem := systray.AddMenuItem("❌ Close Window", "Close the translate window")
-	closeItem.Disable()
 
 	systray.AddSeparator()
 
@@ -118,28 +110,19 @@ func onReady() {
 			case <-openItem.ClickedCh:
 				if !isWebViewOpen {
 					go openWebView()
-					closeItem.Enable()
-					statusItem.SetTitle("📊 Status: Translate Open")
 				}
 			case <-textInputItem.ClickedCh:
 				go handleTextInput()
-			case <-closeItem.ClickedCh:
-				if isWebViewOpen {
-					closeWebView()
-					closeItem.Disable()
-					statusItem.SetTitle("📊 Status: Ready")
-				}
+
 			case <-autoStartItem.ClickedCh:
 				if installAutoStart() {
 					autoStartItem.Disable()
 					removeAutoStartItem.Enable()
-					statusItem.SetTitle("📊 Status: Auto-start enabled")
 				}
 			case <-removeAutoStartItem.ClickedCh:
 				if removeAutoStart() {
 					autoStartItem.Enable()
 					removeAutoStartItem.Disable()
-					statusItem.SetTitle("📊 Status: Auto-start disabled")
 				}
 			case <-quitItem.ClickedCh:
 				systray.Quit()
