@@ -19,6 +19,12 @@ var isWebViewOpen bool
 var webviewProcess *exec.Cmd
 
 func main() {
+	// Check for help flag
+	if len(os.Args) > 1 && (os.Args[1] == "--help" || os.Args[1] == "-h") {
+		printHelp()
+		os.Exit(0)
+	}
+
 	// Ensure we're running on macOS
 	if runtime.GOOS != "darwin" {
 		log.Fatal("This application is designed for macOS only")
@@ -26,6 +32,45 @@ func main() {
 
 	// Run systray on main thread
 	systray.Run(onReady, onExit)
+}
+
+func printHelp() {
+	fmt.Println("macOS Translate App")
+	fmt.Println("===================")
+	fmt.Println()
+	fmt.Println("A simple macOS menubar application that provides quick access to Google Translate through Safari.")
+	fmt.Println()
+	fmt.Println("USAGE:")
+	fmt.Println("  macostranslate [OPTIONS]")
+	fmt.Println()
+	fmt.Println("OPTIONS:")
+	fmt.Println("  -h, --help    Show this help message and exit")
+	fmt.Println()
+	fmt.Println("FEATURES:")
+	fmt.Println("  🌐 Lives in your macOS menubar")
+	fmt.Println("  🚀 Quick access to Google Translate")
+	fmt.Println("  📝 Text input dialog for instant translation")
+	fmt.Println("  🦊 Opens Google Translate in Safari with a dedicated window")
+	fmt.Println("  🎯 Simple menu controls (Open/Close/Quit)")
+	fmt.Println("  📱 Automatically sized Safari window (1000x700)")
+	fmt.Println("  ⚡ Auto-start with system (install/remove via menu)")
+	fmt.Println("  📊 Status indicator showing current state")
+	fmt.Println()
+	fmt.Println("USAGE INSTRUCTIONS:")
+	fmt.Println("  1. After starting the app, you'll see a 🌐 icon in your menubar")
+	fmt.Println("  2. Click the icon to access the menu")
+	fmt.Println("  3. Select '🚀 Open Translate' to open Google Translate in Safari")
+	fmt.Println("  4. Select '📝 Translate Text' to enter text directly for translation")
+	fmt.Println("  5. Use '❌ Close Window' to close the Safari window (app stays in menubar)")
+	fmt.Println("  6. Use '⚡ Install Auto-Start' to make the app start automatically")
+	fmt.Println("  7. Use '🗑️ Remove Auto-Start' to remove from system startup")
+	fmt.Println("  8. Use '🛑 Quit' to exit the application completely")
+	fmt.Println()
+	fmt.Println("REQUIREMENTS:")
+	fmt.Println("  - macOS (this app is designed specifically for macOS)")
+	fmt.Println("  - Safari browser (pre-installed on macOS)")
+	fmt.Println()
+	fmt.Println("For more information, visit: https://github.com/techt3/macostranslate")
 }
 
 func onReady() {

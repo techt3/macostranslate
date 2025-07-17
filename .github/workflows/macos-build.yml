@@ -40,7 +40,7 @@ jobs:
     - name: Test build
       run: |
         file macostranslate
-        ./macostranslate --help || echo "App built successfully (no help flag implemented)"
+        ./macostranslate --help
         
     - name: Run tests
       run: |
