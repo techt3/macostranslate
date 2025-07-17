@@ -10,8 +10,9 @@ on:
     branches: [ "master" ]
 
 permissions:
-  contents: read
+  contents: write
   packages: write
+  actions: read
 
 jobs:
 
@@ -77,25 +78,103 @@ jobs:
         echo "VERSION=${VERSION}" >> $GITHUB_ENV
         echo "PACKAGE_NAME=${PACKAGE_NAME}" >> $GITHUB_ENV
         
+    - name: Create brew formula
+      if: github.event_name == 'push'
+      run: |
+        # Create a package version identifier using short SHA
+        SHORT_SHA=$(echo "${{ github.sha }}" | head -c 7)
+        
+        # Calculate SHA256 checksum
+        SHA256_CHECKSUM=$(shasum -a 256 "${PACKAGE_NAME}" | cut -d' ' -f1)
+        
+        # Create brew formula using echo commands to avoid heredoc issues
+        echo "Creating brew formula..."
+        
+        echo 'class Macostranslate < Formula' > macostranslate.rb
+        echo '  desc "macOS Translate App - Simple menubar application for quick access to Google Translate"' >> macostranslate.rb
+        echo '  homepage "https://github.com/techt3/macostranslate"' >> macostranslate.rb
+        echo "  version \"$SHORT_SHA\"" >> macostranslate.rb
+        echo '  ' >> macostranslate.rb
+        echo '  if Hardware::CPU.arm?' >> macostranslate.rb
+        echo "    url \"https://github.com/techt3/macostranslate/releases/download/v$SHORT_SHA/$PACKAGE_NAME\"" >> macostranslate.rb
+        echo "    sha256 \"$SHA256_CHECKSUM\"" >> macostranslate.rb
+        echo '  elsif Hardware::CPU.intel?' >> macostranslate.rb
+        echo "    url \"https://github.com/techt3/macostranslate/releases/download/v$SHORT_SHA/$PACKAGE_NAME\"" >> macostranslate.rb
+        echo "    sha256 \"$SHA256_CHECKSUM\"" >> macostranslate.rb
+        echo '  end' >> macostranslate.rb
+        echo '  ' >> macostranslate.rb
+        echo '  def install' >> macostranslate.rb
+        echo '    bin.install "macostranslate"' >> macostranslate.rb
+        echo '  end' >> macostranslate.rb
+        echo '  ' >> macostranslate.rb
+        echo '  test do' >> macostranslate.rb
+        echo '    system "#{bin}/macostranslate", "--help"' >> macostranslate.rb
+        echo '  end' >> macostranslate.rb
+        echo 'end' >> macostranslate.rb
+        
+        echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
+        echo "SHA256_CHECKSUM=${SHA256_CHECKSUM}" >> $GITHUB_ENV
+        
     - name: Upload to GitHub Packages
       if: github.event_name == 'push'
       run: |
-        # Create a release and upload the package
-        gh release create "v$VERSION" \
-          --title "macOS Translate v$VERSION" \
+        # Login to GitHub Container Registry
+        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+        
+        # Create simple Dockerfile using echo commands
+        echo 'FROM scratch' > Dockerfile
+        echo 'COPY macostranslate /usr/local/bin/macostranslate' >> Dockerfile
+        echo 'COPY macostranslate-arm64 /usr/local/bin/macostranslate-arm64' >> Dockerfile
+        echo 'COPY macostranslate-amd64 /usr/local/bin/macostranslate-amd64' >> Dockerfile
+        echo 'COPY release/checksums.txt /checksums.txt' >> Dockerfile
+        echo 'COPY macostranslate.rb /homebrew-formula/macostranslate.rb' >> Dockerfile
+        echo 'LABEL org.opencontainers.image.title="macOS Translate App"' >> Dockerfile
+        echo 'LABEL org.opencontainers.image.description="macOS menubar application for quick access to Google Translate"' >> Dockerfile
+        echo 'LABEL org.opencontainers.image.source="https://github.com/techt3/macostranslate"' >> Dockerfile
+        echo "LABEL org.opencontainers.image.version=\"$SHORT_SHA\"" >> Dockerfile
+        echo "LABEL org.opencontainers.image.revision=\"${{ github.sha }}\"" >> Dockerfile
+        
+        # Build and push container image
+        docker build -t "ghcr.io/${{ github.repository_owner }}/macostranslate:$SHORT_SHA" .
+        docker push "ghcr.io/${{ github.repository_owner }}/macostranslate:$SHORT_SHA"
+        
+        # Tag as latest
+        docker tag "ghcr.io/${{ github.repository_owner }}/macostranslate:$SHORT_SHA" "ghcr.io/${{ github.repository_owner }}/macostranslate:latest"
+        docker push "ghcr.io/${{ github.repository_owner }}/macostranslate:latest"
+        
+    - name: Create GitHub release
+      if: github.event_name == 'push'
+      run: |
+        # Create GitHub release
+        gh release create "v$SHORT_SHA" \
+          --title "macOS Translate v$SHORT_SHA" \
           --notes "Automated release of macOS Translate universal binary for commit ${{ github.sha }}" \
           --repo "${{ github.repository }}" \
-          "$PACKAGE_NAME"
+          "$PACKAGE_NAME" \
+          "macostranslate.rb"
+          
+        echo ""
+        echo "✅ Package uploaded successfully to GitHub Packages!"
+        echo ""
+        echo "📦 Installation options:"
+        echo "1. 🍺 Brew formula:"
+        echo "   brew install https://github.com/${{ github.repository }}/releases/download/v$SHORT_SHA/macostranslate.rb"
+        echo ""
+        echo "2. 🐳 GitHub Container Registry:"
+        echo "   docker pull ghcr.io/${{ github.repository_owner }}/macostranslate:$SHORT_SHA"
+        echo ""
+        echo "3. 📥 Direct download:"
+        echo "   curl -L https://github.com/${{ github.repository }}/releases/download/v$SHORT_SHA/$PACKAGE_NAME -o macostranslate.tar.gz"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
-    # - name: Upload artifacts (for pull requests)
-    #   if: github.event_name == 'pull_request'
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: macostranslate-universal
-    #     path: |
-    #       macostranslate
-    #       macostranslate-arm64
-    #       macostranslate-amd64
-    #       release/checksums.txt
+    - name: Upload artifacts (for pull requests)
+      if: github.event_name == 'pull_request'
+      uses: actions/upload-artifact@v4
+      with:
+        name: macostranslate-universal
+        path: |
+          macostranslate
+          macostranslate-arm64
+          macostranslate-amd64
+          release/checksums.txt
