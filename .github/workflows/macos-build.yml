@@ -9,6 +9,10 @@ on:
   pull_request:
     branches: [ "master" ]
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
 
   build-macos:
@@ -47,11 +51,51 @@ jobs:
         # Note: Tests may be limited without a GUI environment
         go test -v ./... || echo "No tests found"
         
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: macostranslate-universal
-        path: |
-          macostranslate
-          macostranslate-arm64
-          macostranslate-amd64
+    - name: Create release package
+      run: |
+        # Create a tarball with all binaries
+        if [ "${{ github.event_name }}" == "push" ]; then
+          VERSION="${{ github.sha }}"
+        else
+          VERSION=$(date +%Y%m%d-%H%M%S)
+        fi
+        
+        mkdir -p release
+        cp macostranslate release/
+        cp macostranslate-arm64 release/
+        cp macostranslate-amd64 release/
+        
+        # Create checksums
+        cd release
+        shasum -a 256 macostranslate* > checksums.txt
+        cd ..
+        
+        # Create tarball
+        PACKAGE_NAME="macostranslate-${VERSION}.tar.gz"
+        tar -czf "${PACKAGE_NAME}" -C release .
+        
+        echo "VERSION=${VERSION}" >> $GITHUB_ENV
+        echo "PACKAGE_NAME=${PACKAGE_NAME}" >> $GITHUB_ENV
+        
+    - name: Upload to GitHub Packages
+      if: github.event_name == 'push'
+      run: |
+        # Create a release and upload the package
+        gh release create "v$VERSION" \
+          --title "macOS Translate v$VERSION" \
+          --notes "Automated release of macOS Translate universal binary for commit ${{ github.sha }}" \
+          --repo "${{ github.repository }}" \
+          "$PACKAGE_NAME"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    # - name: Upload artifacts (for pull requests)
+    #   if: github.event_name == 'pull_request'
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: macostranslate-universal
+    #     path: |
+    #       macostranslate
+    #       macostranslate-arm64
+    #       macostranslate-amd64
+    #       release/checksums.txt
