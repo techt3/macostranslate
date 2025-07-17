@@ -91,10 +91,10 @@ jobs:
         echo "Updating brew formula with release data..."
         cp macostranslate-sample.rb macostranslate.rb
         
-        # Update the version and URLs in the formula
-        sed -i '' "s/version \"sample\"/version \"$SHORT_SHA\"/" macostranslate.rb
-        sed -i '' "s|url \"https://github.com/techt3/macostranslate/releases/download/v\$SAMPLE/macostranslate-\$SAMPLE.tar.gz\"|url \"https://github.com/techt3/macostranslate/releases/download/v$SHORT_SHA/$PACKAGE_NAME\"|g" macostranslate.rb
-        sed -i '' "s/sha256 \"sample_checksum\"/sha256 \"$SHA256_CHECKSUM\"/" macostranslate.rb
+        # Update the placeholders in the formula
+        sed -i '' "s/PLACEHOLDER_VERSION/$SHORT_SHA/g" macostranslate.rb
+        sed -i '' "s|PLACEHOLDER_URL|https://github.com/techt3/macostranslate/releases/download/v$SHORT_SHA/$PACKAGE_NAME|g" macostranslate.rb
+        sed -i '' "s/PLACEHOLDER_SHA256/$SHA256_CHECKSUM/g" macostranslate.rb
         
         echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
         echo "SHA256_CHECKSUM=${SHA256_CHECKSUM}" >> $GITHUB_ENV

@@ -1,14 +1,16 @@
 class Macostranslate < Formula
   desc "macOS Translate App - Simple menubar application with autostart for quick access to Google Translate"
   homepage "https://github.com/techt3/macostranslate"
-  version "sample"
+  version "PLACEHOLDER_VERSION"
+  
+  depends_on :macos
   
   if Hardware::CPU.arm?
-    url "https://github.com/techt3/macostranslate/releases/download/v$SAMPLE/macostranslate-$SAMPLE.tar.gz"
-    sha256 "sample_checksum"
+    url "PLACEHOLDER_URL"
+    sha256 "PLACEHOLDER_SHA256"
   elsif Hardware::CPU.intel?
-    url "https://github.com/techt3/macostranslate/releases/download/v$SAMPLE/macostranslate-$SAMPLE.tar.gz"
-    sha256 "sample_checksum"
+    url "PLACEHOLDER_URL"
+    sha256 "PLACEHOLDER_SHA256"
   end
   
   def install
@@ -16,6 +18,8 @@ class Macostranslate < Formula
   end
   
   def post_install
+    require "fileutils"
+    
     # Create launch agent plist for autostart
     launch_agent_dir = "#{Dir.home}/Library/LaunchAgents"
     FileUtils.mkdir_p(launch_agent_dir)
