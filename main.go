@@ -246,7 +246,7 @@ func isAutoStartInstalled() bool {
 		return false
 	}
 
-	plistPath := filepath.Join(homeDir, "Library", "LaunchAgents", "com.macostranslate.plist")
+	plistPath := filepath.Join(homeDir, "Library", "LaunchAgents", "pl.com.t3.macostranslate.plist")
 	_, err = os.Stat(plistPath)
 	return err == nil
 }
@@ -285,7 +285,7 @@ func installAutoStart() bool {
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>com.macostranslate</string>
+	<string>pl.com.t3.macostranslate</string>
 	<key>ProgramArguments</key>
 	<array>
 		<string>%s</string>
@@ -298,7 +298,7 @@ func installAutoStart() bool {
 </plist>`, absPath)
 
 	// Write the plist file
-	plistPath := filepath.Join(launchAgentsDir, "com.macostranslate.plist")
+	plistPath := filepath.Join(launchAgentsDir, "pl.com.t3.macostranslate.plist")
 	if err := os.WriteFile(plistPath, []byte(plistContent), 0644); err != nil {
 		log.Printf("Error writing plist file: %v", err)
 		return false
@@ -324,7 +324,7 @@ func removeAutoStart() bool {
 		return false
 	}
 
-	plistPath := filepath.Join(homeDir, "Library", "LaunchAgents", "com.macostranslate.plist")
+	plistPath := filepath.Join(homeDir, "Library", "LaunchAgents", "pl.com.t3.macostranslate.plist")
 
 	// Unload the launch agent
 	cmd := exec.Command("launchctl", "unload", plistPath)

@@ -44,10 +44,10 @@ echo ""
 echo "🔍 Testing auto-start functionality..."
 
 # Test auto-start detection
-if [ -f ~/Library/LaunchAgents/com.macostranslate.plist ]; then
+if [ -f ~/Library/LaunchAgents/pl.com.t3.macostranslate.plist ]; then
     echo "⚠️  Auto-start plist already exists - cleaning up for test"
-    launchctl unload ~/Library/LaunchAgents/com.macostranslate.plist 2>/dev/null
-    rm -f ~/Library/LaunchAgents/com.macostranslate.plist
+    launchctl unload ~/Library/LaunchAgents/pl.com.t3.macostranslate.plist 2>/dev/null
+    rm -f ~/Library/LaunchAgents/pl.com.t3.macostranslate.plist
 fi
 
 echo ""

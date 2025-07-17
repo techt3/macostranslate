@@ -92,7 +92,7 @@ The app includes a convenient auto-start feature that allows it to launch automa
 - **Safe Installation**: Uses macOS standard Launch Agents directory (`~/Library/LaunchAgents/`)
 
 The auto-start feature:
-- Creates a `com.macostranslate.plist` file in your Launch Agents directory
+- Creates a `pl.com.t3.macostranslate.plist` file in your Launch Agents directory
 - Uses `launchctl` to manage the service
 - Automatically detects if already installed
 - Provides easy removal if you change your mind
