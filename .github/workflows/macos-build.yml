@@ -89,7 +89,7 @@ jobs:
         
         # Copy the sample formula and update it with actual values
         echo "Updating brew formula with release data..."
-        cp macostranslate-sample.rb macostranslate.rb
+        cp homebrew.rb macostranslate.rb
         
         # Update the placeholders in the formula
         sed -i '' "s/PLACEHOLDER_VERSION/$SHORT_SHA/g" macostranslate.rb
