@@ -29,9 +29,6 @@ func main() {
 		log.Fatal("This application is designed for macOS only")
 	}
 
-	// Set up global hotkey (Cmd+Shift+T)
-	go setupGlobalHotkey()
-
 	// Run systray on main thread
 	systray.Run(onReady, onExit)
 }
@@ -87,6 +84,16 @@ func onReady() {
 
 	systray.AddSeparator()
 
+	// Service management items
+	var serviceItem *systray.MenuItem
+	if isServiceInstalled() {
+		serviceItem = systray.AddMenuItem("🗑️ Uninstall Service", "Remove autostart and keyboard shortcut services")
+	} else {
+		serviceItem = systray.AddMenuItem("⚙️ Install Service", "Install autostart and keyboard shortcut services")
+	}
+
+	systray.AddSeparator()
+
 	quitItem := systray.AddMenuItem("🛑 Quit", "Quit the application")
 
 	// Handle menu clicks
@@ -99,6 +106,8 @@ func onReady() {
 				}
 			case <-textInputItem.ClickedCh:
 				go handleTextInput()
+			case <-serviceItem.ClickedCh:
+				go handleServiceToggle()
 			case <-quitItem.ClickedCh:
 				systray.Quit()
 				return
@@ -204,6 +213,43 @@ return userInput
 	openWebViewWithText(inputText)
 }
 
+func handleServiceToggle() {
+	if isServiceInstalled() {
+		// Uninstall service
+		if err := uninstallService(); err != nil {
+			showErrorDialog("Failed to uninstall service", err.Error())
+			return
+		}
+		showInfoDialog("Service Uninstalled", "Autostart and keyboard shortcut services have been removed successfully.")
+	} else {
+		// Install service
+		if err := installService(); err != nil {
+			showErrorDialog("Failed to install service", err.Error())
+			return
+		}
+		showInfoDialog("Service Installed", "Autostart and keyboard shortcut services have been installed successfully.\n\nTo set up the global keyboard shortcut:\n1. Go to System Preferences > Keyboard > Shortcuts\n2. Select 'Services' in the left panel\n3. Find 'Open macostranslate' service\n4. Assign your preferred shortcut (recommended: Cmd+Shift+T)")
+	}
+
+	// Restart the app to update the menu
+	systray.Quit()
+}
+
+func showErrorDialog(title, message string) {
+	script := fmt.Sprintf(`display dialog "%s" with title "%s" buttons {"OK"} default button "OK" with icon stop`,
+		strings.ReplaceAll(message, "\"", "\\\""),
+		strings.ReplaceAll(title, "\"", "\\\""))
+	cmd := exec.Command("osascript", "-e", script)
+	_ = cmd.Run()
+}
+
+func showInfoDialog(title, message string) {
+	script := fmt.Sprintf(`display dialog "%s" with title "%s" buttons {"OK"} default button "OK"`,
+		strings.ReplaceAll(message, "\"", "\\\""),
+		strings.ReplaceAll(title, "\"", "\\\""))
+	cmd := exec.Command("osascript", "-e", script)
+	_ = cmd.Run()
+}
+
 func openWebViewWithText(text string) {
 	// URL encode the text
 	encodedText := url.QueryEscape(text)
@@ -241,16 +287,4 @@ end tell
 			log.Printf("Error opening default browser with text: %v", err)
 		}
 	}
-}
-
-// setupGlobalHotkey sets up a global keyboard shortcut using macOS shortcuts
-func setupGlobalHotkey() {
-	// Note: This creates a simple monitoring approach
-	// For true global hotkeys, we would need additional libraries or system integration
-	// For now, we'll document the recommended system shortcut setup
-	log.Println("To set up global hotkey Cmd+Shift+T:")
-	log.Println("1. Go to System Preferences > Keyboard > Shortcuts")
-	log.Println("2. Select 'Services' in the left panel")
-	log.Println("3. Find 'macostranslate' service")
-	log.Println("4. Assign Cmd+Shift+T shortcut")
 }

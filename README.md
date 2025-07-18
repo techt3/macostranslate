@@ -10,8 +10,9 @@ A simple macOS menubar application that provides quick access to Google Translat
 - 🦊 Opens Google Translate in Safari with a dedicated window
 - 🎯 Simple menu controls (Open/Close/Quit)
 - 📱 Automatically sized Safari window (1000x700)
-- ⚡ Auto-start with system (automatically configured via Homebrew)
-- ⌨️ Global keyboard shortcut (Cmd+Shift+T) - configured via System Preferences
+- ⚙️ **Service Management** - Install/uninstall autostart and keyboard shortcuts directly from the app
+- ⚡ Auto-start with system (optional, managed via app menu)
+- ⌨️ Global keyboard shortcut (Cmd+Shift+T) - optional, managed via app menu
 - 📊 Status indicator showing current state
 
 
@@ -58,14 +59,29 @@ go build -o macostranslate
 2. Click the icon to access the menu
 3. Select "🚀 Open Translate" to open a Safari window with Google Translate
 4. Select "📝 Translate Text" to enter text directly for translation
-5. The Safari window will be automatically sized and positioned
-6. Use "🛑 Quit" to exit the application completely
+5. Use "⚙️ Install Service" to set up autostart and keyboard shortcuts
+6. The Safari window will be automatically sized and positioned
+7. Use "🛑 Quit" to exit the application completely
 
-**Note:** If installed via Homebrew, the app will automatically start when you log in.
+## Service Management
+
+The app now includes built-in service management:
+
+- **⚙️ Install Service**: Sets up autostart and keyboard shortcut services
+- **🗑️ Uninstall Service**: Removes autostart and keyboard shortcut services
+- **Dynamic Menu**: The menu updates based on current service installation status
+- **User-Friendly**: No need to manually configure system settings
+
+### What the Service Installation Does:
+
+1. **Autostart Service**: Creates a Launch Agent that starts the app when you log in
+2. **Keyboard Shortcut Service**: Creates a macOS Service for global keyboard shortcuts
+3. **Proper Integration**: Uses macOS standard directories and methods
+4. **Safe Installation**: All files are created in user directories, no system modifications
 
 ## Text Input Feature
 
-The app now includes a convenient text input dialog:
+The app includes a convenient text input dialog:
 
 - **📝 Translate Text**: Click to open a text input dialog
 - **Instant Translation**: Enter text and it opens Google Translate with your text pre-filled
