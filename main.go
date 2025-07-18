@@ -107,7 +107,7 @@ func onReady() {
 			case <-textInputItem.ClickedCh:
 				go handleTextInput()
 			case <-serviceItem.ClickedCh:
-				go handleServiceToggle()
+				go handleServiceToggle(serviceItem)
 			case <-quitItem.ClickedCh:
 				systray.Quit()
 				return
@@ -213,7 +213,7 @@ return userInput
 	openWebViewWithText(inputText)
 }
 
-func handleServiceToggle() {
+func handleServiceToggle(serviceItem *systray.MenuItem) {
 	if isServiceInstalled() {
 		// Uninstall service
 		if err := uninstallService(); err != nil {
@@ -221,6 +221,8 @@ func handleServiceToggle() {
 			return
 		}
 		showInfoDialog("Service Uninstalled", "Autostart and keyboard shortcut services have been removed successfully.")
+		serviceItem.SetTitle("⚙️ Install Service")
+
 	} else {
 		// Install service
 		if err := installService(); err != nil {
@@ -228,10 +230,9 @@ func handleServiceToggle() {
 			return
 		}
 		showInfoDialog("Service Installed", "Autostart and keyboard shortcut services have been installed successfully.\n\nTo set up the global keyboard shortcut:\n1. Go to System Preferences > Keyboard > Shortcuts\n2. Select 'Services' in the left panel\n3. Find 'Open macostranslate' service\n4. Assign your preferred shortcut (recommended: Cmd+Shift+T)")
+		serviceItem.SetTitle("🗑️ Uninstall Service")
 	}
 
-	// Restart the app to update the menu
-	systray.Quit()
 }
 
 func showErrorDialog(title, message string) {
