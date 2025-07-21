@@ -141,13 +141,21 @@ func installSystemAutostartService(binaryPath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create temporary file: %v", err)
 	}
-	defer os.Remove(tmpFile.Name())
+	defer func() {
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			fmt.Printf("Warning: failed to remove temporary file: %v\n", err)
+		}
+	}()
 
 	if _, err := tmpFile.WriteString(content); err != nil {
-		tmpFile.Close()
+		if closeErr := tmpFile.Close(); closeErr != nil {
+			fmt.Printf("Warning: failed to close temporary file: %v\n", closeErr)
+		}
 		return fmt.Errorf("failed to write temporary file: %v", err)
 	}
-	tmpFile.Close()
+	if err := tmpFile.Close(); err != nil {
+		return fmt.Errorf("failed to close temporary file: %v", err)
+	}
 
 	// Use AppleScript with admin privileges to copy the file
 	script := fmt.Sprintf(`
