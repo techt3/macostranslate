@@ -52,7 +52,9 @@ func printHelp() {
 	fmt.Println("  🦊 Opens Google Translate in Safari with a dedicated window")
 	fmt.Println("  🎯 Simple menu controls (Open/Close/Quit)")
 	fmt.Println("  📱 Automatically sized Safari window (1000x700)")
-	fmt.Println("  ⚡ Auto-start with system (configured via Homebrew)")
+	fmt.Println("  ⚡ Auto-start with system (system-level installation with admin privileges)")
+	fmt.Println("  ⚙️ Service installation choice (system-level or user-level)")
+	fmt.Println("  🔒 Enhanced security and reliability with sudo integration")
 	fmt.Println("  ⌨️ Global keyboard shortcut (Cmd+Shift+T)")
 	fmt.Println("  📊 Status indicator showing current state")
 	fmt.Println()
@@ -61,8 +63,11 @@ func printHelp() {
 	fmt.Println("  2. Click the icon to access the menu")
 	fmt.Println("  3. Select '🚀 Open Translate' to open Google Translate in Safari")
 	fmt.Println("  4. Select '📝 Translate Text' to enter text directly for translation")
-	fmt.Println("  5. Use '🛑 Quit' to exit the application completely")
-	fmt.Println("  6. To disable autostart, uninstall via: brew uninstall macostranslate")
+	fmt.Println("  5. Select '⚙️ Install Service' to set up autostart and keyboard shortcuts")
+	fmt.Println("      - Choose 'System Install' for better integration (requires admin password)")
+	fmt.Println("      - Choose 'User Install' for no password requirement")
+	fmt.Println("  6. Use '🛑 Quit' to exit the application completely")
+	fmt.Println("  7. To uninstall services, use '🗑️ Uninstall Service' menu option")
 	fmt.Println("  7. Set up global hotkey Cmd+Shift+T in System Preferences > Keyboard > Shortcuts")
 	fmt.Println()
 	fmt.Println("REQUIREMENTS:")
@@ -224,15 +229,75 @@ func handleServiceToggle(serviceItem *systray.MenuItem) {
 		serviceItem.SetTitle("⚙️ Install Service")
 
 	} else {
-		// Install service
-		if err := installService(); err != nil {
-			showErrorDialog("Failed to install service", err.Error())
-			return
-		}
-		showInfoDialog("Service Installed", "Autostart and keyboard shortcut services have been installed successfully.\n\nTo set up the global keyboard shortcut:\n1. Go to System Preferences > Keyboard > Shortcuts\n2. Select 'Services' in the left panel\n3. Find 'Open macostranslate' service\n4. Assign your preferred shortcut (recommended: Cmd+Shift+T)")
-		serviceItem.SetTitle("🗑️ Uninstall Service")
+		// Install service with elevated privileges for better integration
+		showInstallationChoiceDialog(serviceItem)
+	}
+}
+
+func showInstallationChoiceDialog(serviceItem *systray.MenuItem) {
+	// Show dialog asking for installation type
+	script := `
+set userChoice to button returned of (display dialog "Choose installation type:
+
+🔒 System Installation (Recommended)
+- Requires administrator password
+- Better system integration
+- Runs at system startup
+- More reliable autostart
+
+👤 User Installation
+- No password required
+- User-level only
+- May require manual setup" buttons {"Cancel", "User Install", "System Install"} default button "System Install" with title "macostranslate Service Installation")
+
+return userChoice
+`
+
+	cmd := exec.Command("osascript", "-e", script)
+	output, err := cmd.Output()
+	if err != nil {
+		// User cancelled or error occurred
+		return
 	}
 
+	choice := strings.TrimSpace(string(output))
+
+	switch choice {
+	case "System Install":
+		installServiceWithFeedback(serviceItem, true)
+	case "User Install":
+		installServiceWithFeedback(serviceItem, false)
+	default:
+		// User cancelled
+		return
+	}
+}
+
+func installServiceWithFeedback(serviceItem *systray.MenuItem, useSystem bool) {
+	var err error
+
+	if useSystem {
+		// Use system installation
+		err = installServiceWithChoice(true)
+	} else {
+		// Use user installation
+		err = installServiceWithChoice(false)
+	}
+
+	if err != nil {
+		showErrorDialog("Failed to install service", err.Error())
+		return
+	}
+
+	var message string
+	if useSystem {
+		message = "System-level autostart and keyboard shortcut services have been installed successfully.\n\nThe application will now start automatically when your Mac boots up.\n\nTo set up the global keyboard shortcut:\n1. Go to System Preferences > Keyboard > Shortcuts\n2. Select 'Services' in the left panel\n3. Find 'Open macostranslate' service\n4. Assign your preferred shortcut (recommended: Cmd+Shift+T)"
+	} else {
+		message = "User-level autostart and keyboard shortcut services have been installed successfully.\n\nTo set up the global keyboard shortcut:\n1. Go to System Preferences > Keyboard > Shortcuts\n2. Select 'Services' in the left panel\n3. Find 'Open macostranslate' service\n4. Assign your preferred shortcut (recommended: Cmd+Shift+T)"
+	}
+
+	showInfoDialog("Service Installed", message)
+	serviceItem.SetTitle("🗑️ Uninstall Service")
 }
 
 func showErrorDialog(title, message string) {

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>pl.com.t3.macostranslate.system</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>{{BINARY_PATH}}</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <false/>
+  <key>StandardOutPath</key>
+  <string>/var/log/macostranslate.log</string>
+  <key>StandardErrorPath</key>
+  <string>/var/log/macostranslate.error.log</string>
+  <key>UserName</key>
+  <string>{{USER_NAME}}</string>
+  <key>GroupName</key>
+  <string>staff</string>
+</dict>
+</plist>

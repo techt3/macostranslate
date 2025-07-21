@@ -12,10 +12,18 @@
   <key>NSPortName</key>
   <string>NSPerformService</string>
   <key>NSRequiredContext</key>
-  <array/>
+  <dict>
+    <key>NSApplicationIdentifier</key>
+    <string>com.apple.finder</string>
+  </dict>
   <key>NSReturnTypes</key>
   <array/>
   <key>NSSendTypes</key>
   <array/>
+  <key>NSKeyEquivalent</key>
+  <dict>
+    <key>default</key>
+    <string></string>
+  </dict>
 </dict>
 </plist>

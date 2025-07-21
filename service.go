@@ -12,6 +12,9 @@ import (
 //go:embed scripts/autostart.plist
 var autostartPlist string
 
+//go:embed scripts/system_autostart.plist
+var systemAutostartPlist string
+
 //go:embed scripts/service_info.plist
 var serviceInfoPlist string
 
@@ -26,7 +29,11 @@ func getBinaryPath() string {
 	return "/usr/local/bin/macostranslate" // fallback
 }
 
-func getAutostartPlistPath() string {
+func getSystemLaunchDaemonPath() string {
+	return "/Library/LaunchDaemons/pl.com.t3.macostranslate.plist"
+}
+
+func getUserLaunchAgentPath() string {
 	return filepath.Join(os.Getenv("HOME"), "Library", "LaunchAgents", "pl.com.t3.macostranslate.plist")
 }
 
@@ -35,9 +42,12 @@ func getServicePath() string {
 }
 
 func isServiceInstalled() bool {
-	autostartExists := fileExists(getAutostartPlistPath())
+	// Check both user and system level installations
+	userAutostartExists := fileExists(getUserLaunchAgentPath())
+	systemAutostartExists := fileExists(getSystemLaunchDaemonPath())
 	serviceExists := fileExists(getServicePath())
-	return autostartExists && serviceExists
+
+	return (userAutostartExists || systemAutostartExists) && serviceExists
 }
 
 func fileExists(path string) bool {
@@ -45,15 +55,24 @@ func fileExists(path string) bool {
 	return err == nil
 }
 
-func installService() error {
+func installServiceWithChoice(preferSystem bool) error {
 	binaryPath := getBinaryPath()
 
-	// Install autostart service
-	if err := installAutostartService(binaryPath); err != nil {
-		return fmt.Errorf("failed to install autostart service: %v", err)
+	// Install autostart service based on choice
+	if preferSystem {
+		if err := installSystemAutostartService(binaryPath); err != nil {
+			// Fallback to user installation if system fails
+			if err := installUserAutostartService(binaryPath); err != nil {
+				return fmt.Errorf("failed to install autostart service: %v", err)
+			}
+		}
+	} else {
+		if err := installUserAutostartService(binaryPath); err != nil {
+			return fmt.Errorf("failed to install autostart service: %v", err)
+		}
 	}
 
-	// Install keyboard shortcut service
+	// Install keyboard shortcut service (always user-level)
 	if err := installKeyboardService(binaryPath); err != nil {
 		return fmt.Errorf("failed to install keyboard service: %v", err)
 	}
@@ -62,18 +81,29 @@ func installService() error {
 }
 
 func uninstallService() error {
+	// Try to uninstall both user and system level services
+	var errors []string
+
 	if err := uninstallAutostartService(); err != nil {
-		return fmt.Errorf("failed to uninstall autostart service: %v", err)
+		errors = append(errors, fmt.Sprintf("autostart service: %v", err))
+	}
+
+	if err := uninstallSystemAutostartService(); err != nil {
+		errors = append(errors, fmt.Sprintf("system autostart service: %v", err))
 	}
 
 	if err := uninstallKeyboardService(); err != nil {
-		return fmt.Errorf("failed to uninstall keyboard service: %v", err)
+		errors = append(errors, fmt.Sprintf("keyboard service: %v", err))
+	}
+
+	if len(errors) > 0 {
+		return fmt.Errorf("failed to uninstall some services: %s", strings.Join(errors, "; "))
 	}
 
 	return nil
 }
 
-func installAutostartService(binaryPath string) error {
+func installUserAutostartService(binaryPath string) error {
 	// Create LaunchAgents directory if it doesn't exist
 	launchAgentsDir := filepath.Join(os.Getenv("HOME"), "Library", "LaunchAgents")
 	if err := os.MkdirAll(launchAgentsDir, 0755); err != nil {
@@ -84,7 +114,7 @@ func installAutostartService(binaryPath string) error {
 	content := strings.ReplaceAll(autostartPlist, "{{BINARY_PATH}}", binaryPath)
 
 	// Write the plist file
-	plistPath := getAutostartPlistPath()
+	plistPath := getUserLaunchAgentPath()
 	if err := os.WriteFile(plistPath, []byte(content), 0644); err != nil {
 		return fmt.Errorf("failed to write autostart plist: %v", err)
 	}
@@ -98,8 +128,63 @@ func installAutostartService(binaryPath string) error {
 	return nil
 }
 
+func installSystemAutostartService(binaryPath string) error {
+	// Create system-level plist content with user context
+	content := strings.ReplaceAll(systemAutostartPlist, "{{BINARY_PATH}}", binaryPath)
+	content = strings.ReplaceAll(content, "{{USER_NAME}}", os.Getenv("USER"))
+
+	// Use sudo to write the system plist
+	plistPath := getSystemLaunchDaemonPath()
+
+	// Create temporary file
+	tmpFile, err := os.CreateTemp("", "macostranslate-*.plist")
+	if err != nil {
+		return fmt.Errorf("failed to create temporary file: %v", err)
+	}
+	defer os.Remove(tmpFile.Name())
+
+	if _, err := tmpFile.WriteString(content); err != nil {
+		tmpFile.Close()
+		return fmt.Errorf("failed to write temporary file: %v", err)
+	}
+	tmpFile.Close()
+
+	// Use AppleScript with admin privileges to copy the file
+	script := fmt.Sprintf(`
+do shell script "cp '%s' '%s' && chown root:wheel '%s' && chmod 644 '%s'" with administrator privileges
+`, tmpFile.Name(), plistPath, plistPath, plistPath)
+
+	cmd := exec.Command("osascript", "-e", script)
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to install system plist: %v", err)
+	}
+
+	// Try to load the service
+	loadScript := fmt.Sprintf(`
+do shell script "launchctl load '%s'" with administrator privileges
+`, plistPath)
+
+	cmd = exec.Command("osascript", "-e", loadScript)
+	if err := cmd.Run(); err != nil {
+		fmt.Printf("Warning: Could not load system autostart service: %v\n", err)
+	}
+
+	return nil
+}
+
 func uninstallAutostartService() error {
-	plistPath := getAutostartPlistPath()
+	// Try to uninstall user-level service first
+	userPlistPath := getUserLaunchAgentPath()
+	if fileExists(userPlistPath) {
+		if err := uninstallUserAutostartService(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func uninstallUserAutostartService() error {
+	plistPath := getUserLaunchAgentPath()
 
 	if fileExists(plistPath) {
 		// Try to unload the service first
@@ -111,6 +196,34 @@ func uninstallAutostartService() error {
 		// Remove the plist file
 		if err := os.Remove(plistPath); err != nil {
 			return fmt.Errorf("failed to remove autostart plist: %v", err)
+		}
+	}
+
+	return nil
+}
+
+func uninstallSystemAutostartService() error {
+	plistPath := getSystemLaunchDaemonPath()
+
+	if fileExists(plistPath) {
+		// Try to unload the service first using sudo
+		unloadScript := fmt.Sprintf(`
+do shell script "launchctl unload '%s'" with administrator privileges
+`, plistPath)
+
+		cmd := exec.Command("osascript", "-e", unloadScript)
+		if err := cmd.Run(); err != nil {
+			fmt.Printf("Warning: Could not unload system autostart service: %v\n", err)
+		}
+
+		// Remove the plist file using sudo
+		removeScript := fmt.Sprintf(`
+do shell script "rm -f '%s'" with administrator privileges
+`, plistPath)
+
+		cmd = exec.Command("osascript", "-e", removeScript)
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to remove system autostart plist: %v", err)
 		}
 	}
 
